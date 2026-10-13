@@ -6,7 +6,14 @@
 	const p = $derived(data.product);
 	let copied = $state('');
 	let q = $state('');
-	const files = $derived(p.files.filter((f) => f.name.toLowerCase().includes(q.toLowerCase())));
+	const releases = $derived(
+		data.releases
+			.map((r) => ({
+				...r,
+				assets: r.assets.filter((a) => a.name.toLowerCase().includes(q.toLowerCase()))
+			}))
+			.filter((r) => r.assets.length)
+	);
 
 	async function copy(hash: string) {
 		await navigator.clipboard.writeText(hash);
@@ -21,34 +28,35 @@
 	<a href="{base}/">FileVault</a> / <a href="{base}/{c.slug}/">{c.name}</a> / {p.name}
 </div>
 <h1>{p.name}</h1>
-<span class="badge">{p.kind}</span><span class="badge">v{p.version}</span>
+<span class="badge">{p.kind}</span>
 <p class="muted">{p.description}</p>
 
 <input type="search" placeholder="Filter files…" bind:value={q} />
 
-<div class="table-scroll">
-	<table>
-		<thead><tr><th>File</th><th>Arch</th><th>Size</th><th>SHA-256</th><th></th></tr></thead>
-		<tbody>
-			{#each files as f}
-				<tr>
-					<td>
-						<strong>{f.name}</strong>
-						{#if f.description}<div class="muted">{f.description}</div>{/if}
-					</td>
-					<td>{f.arch ?? '—'}</td>
-					<td>{formatSize(f.size)}</td>
-					<td>
-						<code>{f.sha256.slice(0, 16)}…</code>
-						<button class="btn ghost" onclick={() => copy(f.sha256)}>
-							{copied === f.sha256 ? 'Copied' : 'Copy'}
-						</button>
-					</td>
-					<td><a class="btn" href="{base}/files/{f.path}" download={f.name}>Download</a></td>
-				</tr>
-			{:else}
-				<tr><td colspan="5" class="muted">No files match.</td></tr>
-			{/each}
-		</tbody>
-	</table>
-</div>
+{#each releases as r}
+	<h2>{r.name} <span class="badge">{new Date(r.date).toLocaleDateString('en-GB')}</span></h2>
+	<div class="table-scroll">
+		<table>
+			<thead><tr><th>File</th><th>Size</th><th>SHA-256</th><th></th></tr></thead>
+			<tbody>
+				{#each r.assets as a}
+					<tr>
+						<td><strong>{a.name}</strong></td>
+						<td>{formatSize(a.size)}</td>
+						<td>
+							{#if a.sha256}
+								<code>{a.sha256.slice(0, 16)}…</code>
+								<button class="btn ghost" onclick={() => copy(a.sha256!)}>
+									{copied === a.sha256 ? 'Copied' : 'Copy'}
+								</button>
+							{:else}—{/if}
+						</td>
+						<td><a class="btn" href={a.url}>Download</a></td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
+{:else}
+	<p class="muted">No files published yet.</p>
+{/each}

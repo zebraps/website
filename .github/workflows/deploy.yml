@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *' # hourly rebuild picks up new releases
 
 permissions:
   contents: read
@@ -27,6 +29,7 @@ jobs:
       - name: Build
         env:
           # Project pages are served from /<repo-name>
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BASE_PATH: /${{ github.event.repository.name }}
         run: npm run build
       - uses: actions/upload-pages-artifact@v3

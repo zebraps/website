@@ -1,34 +1,36 @@
-export interface VaultFile {
-	name: string;
-	/** Path relative to static/files, e.g. "zebraps/example-game/1.0.0/game.dll" */
-	path: string;
-	size: number; // bytes
-	sha256: string;
-	description?: string;
-	arch?: 'x86' | 'x64' | 'arm64' | 'any';
-}
-
 export interface Product {
 	slug: string;
 	name: string;
-	version: string;
 	kind: 'game' | 'software';
 	description: string;
-	files: VaultFile[];
+	/** GitHub repo that hosts this product's files as release assets, e.g. "zebraps/example-game" */
+	repo: string;
 }
 
 export interface Company {
 	slug: string;
 	name: string;
 	tagline: string;
-	website?: string;
 	products: Product[];
 }
 
-/**
- * Catalog of hosted files. Put the real file in static/files/<path>
- * and add an entry here. Entries below are placeholders — replace them.
- */
+export interface Asset {
+	name: string;
+	size: number;
+	sha256?: string;
+	url: string;
+	downloads: number;
+}
+
+export interface Release {
+	tag: string;
+	name: string;
+	date: string;
+	url: string;
+	assets: Asset[];
+}
+
+/** Add companies/products here. Each product = one repo; each version = one release; each file = one release asset. */
 export const companies: Company[] = [
 	{
 		slug: 'zebraps',
@@ -38,26 +40,9 @@ export const companies: Company[] = [
 			{
 				slug: 'example-game',
 				name: 'Example Game',
-				version: '1.0.0',
 				kind: 'game',
 				description: 'Placeholder entry showing how a game is listed.',
-				files: [
-					{
-						name: 'GameAssembly.dll',
-						path: 'zebraps/example-game/1.0.0/GameAssembly.dll',
-						size: 48234496,
-						sha256: '0000000000000000000000000000000000000000000000000000000000000000',
-						description: 'Main game logic module',
-						arch: 'x64'
-					},
-					{
-						name: 'UnityPlayer.dll',
-						path: 'zebraps/example-game/1.0.0/UnityPlayer.dll',
-						size: 29884416,
-						sha256: '1111111111111111111111111111111111111111111111111111111111111111',
-						arch: 'x64'
-					}
-				]
+				repo: 'zebraps/example-game'
 			}
 		]
 	}
